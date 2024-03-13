@@ -111,3 +111,30 @@ where milliseconds >
 order by milliseconds desc;
 
 # SET 3
+/* Q1) Find how much amount spent by each customer on artist?
+Write a query to return customer name, artist name and total spent */
+select * from customer;
+select * from invoice_line;
+select * from artist;
+select * from invoice;
+
+with best_selling_artist as (
+select artist.artist_id, artist.name, round(sum(invoice_line.unit_price*invoice_line.quantity)) as TotalSales
+from invoice_line
+join track on invoice_line.track_id = track.track_id
+join album on track.album_id = album.album_id
+join artist on album.artist_id = artist.artist_id
+group by artist.artist_id, artist.name
+order by TotalSales desc
+limit 1
+)
+select customer.customer_id, customer.first_name, customer.last_name, best_selling_artist.name,
+sum(invoice_line.unit_price*invoice_line.quantity) as amount_spent
+from invoice
+join customer on invoice.customer_id = customer.customer_id
+join invoice_line on invoice.invoice_id = invoice_line.invoice_id
+join track on invoice_line.track_id = track.track_id
+join album on track.album_id = album.album_id
+join best_selling_artist on best_selling_artist.artist_id = album.album_id
+group by customer.customer_id,customer.first_name, customer.last_name, best_selling_artist.name
+order by amount_spent desc;
